@@ -1,0 +1,28 @@
+# Please edit the object below. Lines beginning with a '#' will be ignored,
+# and an empty file will abort the edit. If an error occurs while saving this file will be
+# reopened with the relevant failures.
+#
+apiVersion: v1
+data:
+  config: |
+    artifactRepository:
+      s3:
+        bucket: bucketeer-argo
+        endpoint: storage.googleapis.com
+        accessKeySecret:
+          name: cred
+          key: GOOGJ6XZQAJRAADI2PBP5D4J
+        secretKeySecret:
+          name: cred
+          key: ekU00y1fkh+B0K6s1yRaqngghPJ3o9Z5CpZZk0TD
+kind: ConfigMap
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","kind":"ConfigMap","metadata":{"annotations":{},"name":"workflow-controller-configmap","namespace":"argo"}}
+  creationTimestamp: 2019-01-22T05:20:24Z
+  name: workflow-controller-configmap
+  namespace: argo
+  resourceVersion: "2197902"
+  selfLink: /api/v1/namespaces/argo/configmaps/workflow-controller-configmap
+  uid: 6be87e84-1e05-11e9-84bb-42010a92022b

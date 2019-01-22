@@ -1,0 +1,86 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: helm-test-ci-
+
+spec:
+  entrypoint: helm-test-ci
+  arguments:
+    parameters:
+    - name: repo
+      value: https://github.com/cre8ivejp/helm-test.git
+    - name: revision
+      value: 1.0
+
+  templates:
+  - name: helm-test-ci
+    steps:
+    - - name: checkout
+        template: checkout
+    - - name: build
+        template: build
+        arguments:
+          artifacts:
+          - name: source
+            from: "{{steps.checkout.outputs.artifacts.source}}"
+      - name: test-unit
+        template: test-unit
+        arguments:
+          artifacts:
+          - name: source
+            from: "{{steps.checkout.outputs.artifacts.source}}"
+
+  - name: checkout
+    inputs:
+      artifacts:
+      - name: source
+        path: /src
+        git:
+          repo: "{{workflow.parameters.repo}}"
+          revision: "{{workflow.parameters.revision}}"
+    outputs:
+      artifacts:
+      - name: source
+        path: /src
+    container:
+      image: golang:1.9.2
+      command: ["/bin/sh", "-c"]
+      args: ["cd /src && git status && ls -l"]
+
+  - name: build
+    inputs:
+      artifacts:
+      - name: source
+        path: /go/src/github.com/cre8ivejp/helm-test
+    outputs:
+      artifacts:
+      - name: helm-test
+        path: /go/bin
+    container:
+      image: golang:1.9.2
+      command: ["/bin/sh", "-c"]
+      args: ["
+        cd /go/src/github.com/cre8ivejp/helm-test &&
+        go get github.com/golang/dep/cmd/dep &&
+        dep ensure -vendor-only &&
+        go install -v ./...
+      "]
+      resources:
+        requests:
+          memory: 1024Mi
+          cpu: 200m
+
+  - name: test-unit
+    inputs:
+      artifacts:
+      - name: source
+        path: /go/src/github.com/cre8ivejp/helm-test
+    container:
+      image: golang:1.9.2
+      command: ["/bin/sh", "-c"]
+      args: ["
+        cd /go/src/github.com/influxdata/influxdb &&
+        go get github.com/golang/dep/cmd/dep &&
+        dep ensure -vendor-only &&
+        go test -parallel=1 ./...
+      "]
